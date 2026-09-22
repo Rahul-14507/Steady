@@ -1,0 +1,20 @@
+{
+  "common": {
+    "appName": "Steady",
+    "disclaimer": "Steady does not diagnose any condition. It is not a substitute for medical advice.",
+    "continue": "Continue",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back"
+  },
+  "quality": {
+    "no_hand": "Place your hand in the frame.",
+    "no_face": "Place your face in the frame.",
+    "too_dark": "Move somewhere with more light.",
+    "too_bright": "Reduce glare or move away from the light.",
+    "too_close": "Move the phone a little farther away.",
+    "too_far": "Move the phone a little closer.",
+    "out_of_frame": "Move back so everything stays in the frame.",
+    "low_tracking": "Hold still for a moment."
+  }
+}
