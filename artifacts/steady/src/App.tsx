@@ -789,6 +789,7 @@ function Assessment({ kind }: { kind: 'tapping' | 'face' }) {
           </div>
 
           {/* Interactive Simulation / Test Profiles */}
+          {/* Clinical Motor Trends & PDF Report Export UI */}
           <div className="mt-8 rounded-2xl bg-muted/60 border border-border p-5">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
