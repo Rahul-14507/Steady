@@ -117,12 +117,94 @@ export function buildReport(profile: Profile | undefined, sessions: Session[], r
   return doc;
 }
 
+export interface ReportSummaryRow {
+  key: MetricKey;
+  label: string;
+  unit: string;
+  usualStr: string;
+  recentStr: string;
+  changeStr: string;
+  sessionCount: number;
+  values: number[];
+}
+
+export interface ReportData {
+  patientName: string;
+  preparedDate: string;
+  rangeDays: number;
+  sessionCount: number;
+  dominantHand: string;
+  avgQuality: number;
+  rows: ReportSummaryRow[];
+}
+
+export function getReportData(profile: Profile | undefined, sessions: Session[], rangeDays = 90): ReportData {
+  const now = Date.now();
+  const since = now - rangeDays * 86_400_000;
+  const validInRange = sessions.filter((session) => session.valid !== false && session.startedAt >= since);
+  const included = validInRange.length > 0 ? validInRange : sessions;
+  const reportProfile = profile ?? {
+    id: "me" as const,
+    name: "Personal Check-in",
+    language: "en" as const,
+    consent: { camera: true, localStorage: true, acceptedAt: now },
+    fontScale: 1 as const,
+    highContrast: false,
+    voiceGuidance: false,
+    diagnosisStatus: "none" as const,
+  };
+
+  const keys = Object.keys(METRICS) as MetricKey[];
+  const rows: ReportSummaryRow[] = [];
+
+  for (const key of keys) {
+    const values = included.map((session) => valueFor(session, key)).filter((value): value is number => value !== undefined);
+    if (!values.length) continue;
+    const baseline = computeBaseline(key, values);
+    const recent = values.slice(-3);
+    const recentValue = recent.reduce((sum, value) => sum + value, 0) / recent.length;
+    const change = baseline ? explainChange(key, recentValue, baseline).pctChange : 0;
+
+    rows.push({
+      key,
+      label: METRICS[key].label,
+      unit: METRICS[key].unit,
+      usualStr: baseline ? `${baseline.median.toFixed(METRICS[key].decimals)} ${METRICS[key].unit}` : "Learning",
+      recentStr: `${recentValue.toFixed(METRICS[key].decimals)} ${METRICS[key].unit}`,
+      changeStr: baseline ? `${change > 0 ? "+" : ""}${change}%` : "—",
+      sessionCount: values.length,
+      values,
+    });
+  }
+
+  const avgQuality = included.length
+    ? Math.round(included.reduce((sum, session) => sum + (session.quality?.score ?? 80), 0) / included.length)
+    : 0;
+
+  return {
+    patientName: reportProfile.name || "Personal Check-in",
+    preparedDate: new Date(now).toLocaleDateString(),
+    rangeDays,
+    sessionCount: included.length,
+    dominantHand: String(reportProfile.dominantHand ?? "Right hand"),
+    avgQuality,
+    rows,
+  };
+}
+
 export async function shareOrDownload(doc: jsPDF, name = "steady-report.pdf") {
   const blob = doc.output("blob");
   const file = new File([blob], name, { type: "application/pdf" });
-  if (navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ files: [file], title: "Steady report" });
-  } else {
-    doc.save(name);
+  if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "Steady Clinical Movement Report" });
+      return;
+    } catch { /* user cancelled share */ }
   }
+  doc.save(name);
+}
+
+export function getReportBlobUrl(doc: jsPDF): string {
+  const blob = doc.output("blob");
+  return URL.createObjectURL(blob);
 }
