@@ -632,6 +632,7 @@ function Assessment({ kind }: { kind: 'tapping' | 'face' }) {
       {/* Top Clear Instruction Banner */}
       <div className="rounded-2xl bg-primary-foreground/15 border border-primary-foreground/20 p-4 text-left flex items-center justify-between gap-4">
         <div>
+          {/* Facial Mobility & Expression Guidance Banner */}
           <p className="text-xs uppercase font-extrabold tracking-[.18em] text-secondary">
             {isTapping ? 'Action Required' : 'Facial Guidance'}
           </p>
