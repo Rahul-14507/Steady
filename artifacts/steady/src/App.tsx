@@ -43,6 +43,9 @@ const navItems: { href: string; label: string; icon: IconType }[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
+/**
+ * Application Layout Shell & Navigation Header Component
+ */
 function Shell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   return (
