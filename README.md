@@ -4,11 +4,20 @@ A modern web application built with React, TypeScript, Vite, and Tailwind CSS.
 
 ---
 
-## Machine Learning & Architecture
+## Machine Learning & Models
 
-Tremor and bradykinesia detection runs on Google's open-source MediaPipe Hand/Face Landmarker models (21-point hand mesh, 478-point face mesh), executed fully on-device via TensorFlow Lite/WASM. MediaPipe's HandLandmarker and FaceLandmarker are themselves open-source, on-device ML models (Google's BlazePalm/BlazeFace + landmark regression networks, Apache 2.0 licensed).
+Tremor and bradykinesia detection runs on Google's open-source MediaPipe Hand/Face Landmarker models, executed fully on-device via TensorFlow Lite and WebAssembly (WASM). MediaPipe's HandLandmarker and FaceLandmarker are open-source, client-side ML models (Google's BlazePalm/BlazeFace + landmark regression networks, Apache 2.0 licensed).
 
-All computer vision processing is performed locally on-device. No video frames, images, or raw spatial landmarks are ever uploaded to remote servers.
+### ML Vision Models Overview
+
+| Model | Model Asset File | Architecture & Mesh Output | License | Application in Steady |
+|---|---|---|---|---|
+| **MediaPipe Hand Landmarker** | `public/models/hand_landmarker.task` | **BlazePalm** detector + 21-point 3D hand mesh landmark regression network | Apache 2.0 | Finger tapping kinetics, opening amplitude, tap frequency, amplitude decay (sequence effect), and hand tremor tracking |
+| **MediaPipe Face Landmarker** | `public/models/face_landmarker.task` | **BlazeFace** detector + 478-point 3D face mesh + 52 facial blendshapes | Apache 2.0 | Facial mobility check, smile excursion percentage, hypomimia detection, and spontaneous blink rate tracking |
+
+### On-Device Execution & Privacy
+- **TensorFlow Lite / WASM Execution**: Model inference runs entirely in the local browser process via `@mediapipe/tasks-vision` WebAssembly runtime with GPU acceleration (falling back gracefully to CPU).
+- **100% On-Device Privacy**: No camera frames, images, video streams, or spatial landmark coordinates are ever uploaded or transmitted to any server.
 
 ---
 
