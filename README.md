@@ -4,6 +4,14 @@ A modern web application built with React, TypeScript, Vite, and Tailwind CSS.
 
 ---
 
+## Machine Learning & Architecture
+
+Tremor and bradykinesia detection runs on Google's open-source MediaPipe Hand/Face Landmarker models (21-point hand mesh, 478-point face mesh), executed fully on-device via TensorFlow Lite/WASM. MediaPipe's HandLandmarker and FaceLandmarker are themselves open-source, on-device ML models (Google's BlazePalm/BlazeFace + landmark regression networks, Apache 2.0 licensed).
+
+All computer vision processing is performed locally on-device. No video frames, images, or raw spatial landmarks are ever uploaded to remote servers.
+
+---
+
 ## Prerequisites
 
 Before running the project, ensure you have the following installed on your system:
