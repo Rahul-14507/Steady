@@ -283,6 +283,9 @@ function playTapChime() {
   } catch { /* audio not allowed */ }
 }
 
+/**
+ * Finger Tapping Guided Motor Check-In Component & Real-Time Kinematic Analysis
+ */
 function Assessment({ kind }: { kind: 'tapping' | 'face' }) {
   const [, setLocation] = useLocation();
   const [phase, setPhase] = useState<'setup' | 'ready' | 'running' | 'result'>('setup');
