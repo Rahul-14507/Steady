@@ -1,4 +1,4 @@
-export type TaskType = "tapping" | "face";
+export type TaskType = "tapping" | "face" | "tremor";
 export type MedState = "on" | "off" | "just_took" | "unsure";
 
 export type MetricKey =
@@ -7,10 +7,38 @@ export type MetricKey =
   | "tap_amp_decrement_pct"
   | "tap_rhythm_cv"
   | "tap_hesitations"
+  // Clinical touch vector metrics
+  | "tap_iti_variance"
+  | "tap_freq_decay"
+  | "tap_dwell_time_ms"
+  | "tap_spatial_drift_px"
+  // Face metrics
   | "blink_rate_bpm"
   | "smile_amp"
   | "smile_onset_ms"
-  | "face_expressivity";
+  | "face_expressivity"
+  // Rest Tremor 4-6 Hz metrics
+  | "tremor_freq_hz"
+  | "tremor_power_4_6hz"
+  | "tremor_amplitude_rms"
+  | "tremor_constancy_pct";
+
+export interface TouchVector {
+  t: number; // timestamp in seconds (from start) or ms
+  x: number; // x coordinate in pixels
+  y: number; // y coordinate in pixels
+  type: "down" | "up";
+}
+
+export interface TremorSample {
+  t: number; // seconds from start
+  ax: number; // m/s^2 or g
+  ay: number;
+  az: number;
+  gx?: number; // deg/s
+  gy?: number;
+  gz?: number;
+}
 
 export interface MetricDef {
   key: MetricKey;
