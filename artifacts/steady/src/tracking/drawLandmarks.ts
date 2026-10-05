@@ -151,19 +151,11 @@ export function drawHandSkeleton(
 
   ctx.save();
 
-  // Draw HUD Header Badge
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctx.roundRect ? ctx.roundRect(12, 12, 180, 32, 10) : ctx.fillRect(12, 12, 180, 32);
-  ctx.fill();
-  ctx.fillStyle = "#00f2fe";
-  ctx.font = "bold 12px sans-serif";
-  ctx.fillText("● HAND SKELETON (21 LMs)", 22, 32);
-
   // Draw bone connections
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 3.5;
   ctx.strokeStyle = "rgba(0, 242, 254, 0.95)"; // Vibrant cyan line
   ctx.shadowColor = "#00f2fe";
-  ctx.shadowBlur = 12;
+  ctx.shadowBlur = 10;
 
   for (const [startIdx, endIdx] of HAND_CONNECTIONS) {
     const p1 = points[startIdx];
@@ -180,7 +172,7 @@ export function drawHandSkeleton(
   const thumbTip = points[4];
   const indexTip = points[8];
   if (thumbTip && indexTip) {
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.5;
     ctx.strokeStyle = "rgba(246, 211, 101, 1.0)"; // Gold active tap indicator
     ctx.setLineDash([6, 4]);
     ctx.beginPath();
@@ -192,7 +184,7 @@ export function drawHandSkeleton(
     // Draw active tap pulse circle at index tip
     ctx.fillStyle = "rgba(246, 211, 101, 0.5)";
     ctx.beginPath();
-    ctx.arc(indexTip.x, indexTip.y, 16, 0, Math.PI * 2);
+    ctx.arc(indexTip.x, indexTip.y, 14, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -200,7 +192,7 @@ export function drawHandSkeleton(
   for (let i = 0; i < points.length; i++) {
     const p = points[i];
     const isTip = i === 4 || i === 8 || i === 12 || i === 16 || i === 20;
-    const radius = isTip ? 7 : 4.5;
+    const radius = isTip ? 6 : 4;
 
     ctx.fillStyle = isTip ? "#f6d365" : "#00f2fe";
     ctx.beginPath();
@@ -208,7 +200,7 @@ export function drawHandSkeleton(
     ctx.fill();
 
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
   }
 
@@ -223,74 +215,92 @@ export function drawFaceMesh(
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const activeLandmarks = (landmarks && landmarks.length > 0)
-    ? landmarks
-    : generateAnimatedFaceLandmarks();
-
   const width = canvas.width;
   const height = canvas.height;
 
-  const points = activeLandmarks.map((p) => ({
-    x: p.x * width,
-    y: p.y * height,
-  }));
-
   ctx.save();
 
-  // Draw HUD Header Badge
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctx.roundRect ? ctx.roundRect(12, 12, 190, 32, 10) : ctx.fillRect(12, 12, 190, 32);
-  ctx.fill();
-  ctx.fillStyle = "#00f5d4";
-  ctx.font = "bold 12px sans-serif";
-  ctx.fillText("● FACE MESH GRAPH (478 LMs)", 22, 32);
+  if (landmarks && landmarks.length > 0) {
+    const points = landmarks.map((p) => ({
+      x: p.x * width,
+      y: p.y * height,
+    }));
 
-  ctx.shadowColor = "#00f5d4";
-  ctx.shadowBlur = 10;
-  ctx.lineWidth = 2.5;
-  ctx.strokeStyle = "rgba(0, 245, 212, 0.9)";
+    ctx.shadowColor = "#00f5d4";
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(0, 245, 212, 0.9)";
 
-  const drawPath = (indices: number[], close = false) => {
-    ctx.beginPath();
-    let first = true;
-    for (const idx of indices) {
+    const drawPath = (indices: number[], close = false) => {
+      ctx.beginPath();
+      let first = true;
+      for (const idx of indices) {
+        const p = points[idx];
+        if (!p) continue;
+        if (first) {
+          ctx.moveTo(p.x, p.y);
+          first = false;
+        } else {
+          ctx.lineTo(p.x, p.y);
+        }
+      }
+      if (close) ctx.closePath();
+      ctx.stroke();
+    };
+
+    // Draw main facial feature contours
+    drawPath(FACE_CONTOUR, true);
+    drawPath(LIPS_OUTER, true);
+    drawPath(LIPS_INNER, true);
+    drawPath(LEFT_EYE, true);
+    drawPath(RIGHT_EYE, true);
+    drawPath(LEFT_EYEBROW, false);
+    drawPath(RIGHT_EYEBROW, false);
+    drawPath(NOSE_BRIDGE, false);
+
+    // Draw key facial anchor nodes (nose tip, eye centers, mouth corners)
+    const keyIndices = [1, 33, 133, 362, 263, 61, 291, 13, 14];
+    for (const idx of keyIndices) {
       const p = points[idx];
-      if (!p) continue;
-      if (first) {
-        ctx.moveTo(p.x, p.y);
-        first = false;
-      } else {
-        ctx.lineTo(p.x, p.y);
+      if (p) {
+        ctx.fillStyle = "#f6d365";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
       }
     }
-    if (close) ctx.closePath();
+  } else {
+    // Subtle face alignment guide oval
+    const cx = width * 0.5;
+    const cy = height * 0.48;
+    const rx = width * 0.24;
+    const ry = height * 0.34;
+
+    ctx.strokeStyle = "rgba(0, 245, 212, 0.4)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
     ctx.stroke();
-  };
+    ctx.setLineDash([]);
 
-  // Draw main facial features
-  drawPath(FACE_CONTOUR, true);
-  drawPath(LIPS_OUTER, true);
-  drawPath(LIPS_INNER, true);
-  drawPath(LEFT_EYE, true);
-  drawPath(RIGHT_EYE, true);
-  drawPath(LEFT_EYEBROW, false);
-  drawPath(RIGHT_EYEBROW, false);
-  drawPath(NOSE_BRIDGE, false);
-
-  // Draw key facial anchor nodes (nose tip, eye centers, mouth corners)
-  const keyIndices = [1, 33, 133, 362, 263, 61, 291, 13, 14];
-  for (const idx of keyIndices) {
-    const p = points[idx];
-    if (p) {
-      ctx.fillStyle = "#f6d365";
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
+    // Crosshair corner ticks
+    const tickLen = 14;
+    ctx.strokeStyle = "rgba(0, 245, 212, 0.7)";
+    ctx.lineWidth = 2;
+    // Top
+    ctx.beginPath(); ctx.moveTo(cx, cy - ry - tickLen); ctx.lineTo(cx, cy - ry + tickLen); ctx.stroke();
+    // Bottom
+    ctx.beginPath(); ctx.moveTo(cx, cy + ry - tickLen); ctx.lineTo(cx, cy + ry + tickLen); ctx.stroke();
+    // Left
+    ctx.beginPath(); ctx.moveTo(cx - rx - tickLen, cy); ctx.lineTo(cx - rx + tickLen, cy); ctx.stroke();
+    // Right
+    ctx.beginPath(); ctx.moveTo(cx + rx - tickLen, cy); ctx.lineTo(cx + rx + tickLen, cy); ctx.stroke();
   }
 
   ctx.restore();
 }
+
