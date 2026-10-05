@@ -573,6 +573,7 @@ function Assessment({ kind }: { kind: 'tapping' | 'face' }) {
         <h2 className="text-lg font-bold">Before we begin</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">Choose what feels accurate today. These notes stay with your session.</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {/* Rest Tremor & Hand Selection Setup */}
           <fieldset>
             <legend className="mb-2 text-sm font-bold">{isTapping ? 'Which hand will you tap with?' : 'Camera setup'}</legend>
             {isTapping ? (
