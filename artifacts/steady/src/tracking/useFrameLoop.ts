@@ -3,18 +3,28 @@ export function startFrameLoop(
   onFrame: (mediaTimeSec: number, nowMs: number) => void,
 ) {
   let stopped = false;
+  let animId: number;
+
   const tick = (now: number, metadata?: { mediaTime?: number }) => {
     if (stopped) return;
-    const mediaTime = metadata?.mediaTime ?? video.currentTime;
+    const mediaTime = metadata?.mediaTime ?? video.currentTime ?? (now / 1000);
     onFrame(mediaTime, now);
-    if ("requestVideoFrameCallback" in video) {
-      video.requestVideoFrameCallback((nextNow, nextMetadata) => tick(nextNow, nextMetadata));
+
+    if ("requestVideoFrameCallback" in video && video.readyState >= 2 && !video.paused) {
+      try {
+        video.requestVideoFrameCallback((nextNow, nextMetadata) => tick(nextNow, nextMetadata));
+      } catch {
+        animId = requestAnimationFrame((nextNow) => tick(nextNow));
+      }
     } else {
-      requestAnimationFrame((nextNow) => tick(nextNow));
+      animId = requestAnimationFrame((nextNow) => tick(nextNow));
     }
   };
-  tick(performance.now());
+
+  animId = requestAnimationFrame((nextNow) => tick(nextNow));
+
   return () => {
     stopped = true;
+    cancelAnimationFrame(animId);
   };
 }
