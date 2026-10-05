@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -15,14 +16,21 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH || '/';
 
-export default defineConfig({
-  base: basePath,
-  plugins: [
-    react(),
-    tailwindcss(),
+export default defineConfig(async ({ mode }) => {
+  const useHttps = mode === 'https' || process.env.HTTPS === 'true' || process.env.npm_lifecycle_event === 'dev:https';
+
+  return {
+    base: basePath,
+    plugins: [
+      ...(useHttps ? [basicSsl()] : []),
+      react(),
+      tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
+      devOptions: {
+        enabled: true,
+      },
       manifest: {
         name: 'Steady',
         short_name: 'Steady',
@@ -87,4 +95,5 @@ export default defineConfig({
     host: '0.0.0.0',
     allowedHosts: true,
   },
+  };
 });
